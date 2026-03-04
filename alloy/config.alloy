@@ -1,0 +1,88 @@
+// ═══════════════════════════════════════════════════════════════
+// Alloy config — coleta de logs de containers Docker (LOCAL)
+// Roda na mesma stack que o Loki, envia direto via rede interna.
+// ═══════════════════════════════════════════════════════════════
+
+// --------------------------------------------------------------
+// 1. Descoberta de containers via Docker socket
+// --------------------------------------------------------------
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Extrai labels úteis dos containers.
+// Cada app Docker Compose vira um "project" (oli-scraper, oli-api, etc).
+// A label "service" do compose vira o nome do serviço (worker, api, etc).
+discovery.relabel "docker_logs" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_project"]
+    target_label  = "project"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+}
+
+// --------------------------------------------------------------
+// 2. Coleta de logs dos containers
+// --------------------------------------------------------------
+loki.source.docker "default" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.docker_logs.rules
+  forward_to    = [loki.process.pipeline.receiver]
+}
+
+// --------------------------------------------------------------
+// 3. Pipeline de processamento
+// --------------------------------------------------------------
+loki.process "pipeline" {
+  forward_to = [loki.write.local.receiver]
+
+  // Descarta logs da própria stack de monitoramento
+  stage.drop {
+    source     = "container"
+    expression = "(alloy|grafana|loki|traefik)"
+  }
+
+  // Parseia JSON dos workers (structlog já emite JSON em prod)
+  stage.json {
+    expressions = {
+      level   = "level",
+      event   = "event",
+      source  = "source",
+      job_id  = "job_id",
+    }
+  }
+
+  // Promove "level" como label para filtrar WARNING/ERROR no Grafana
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+}
+
+// --------------------------------------------------------------
+// 4. Envio para Loki (rede interna Docker)
+// --------------------------------------------------------------
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

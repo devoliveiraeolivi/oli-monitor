@@ -1,0 +1,139 @@
+# Stack de monitoramento centralizada — Loki + Grafana + Alloy
+# Roda via Portainer (Swarm) com Traefik na frente.
+#
+# Pré-requisitos:
+#   - Traefik rodando na network_swarm_public
+#   - CNAMEs: grafana.oliveiraeolivi.cloud, loki.oliveiraeolivi.cloud
+#   - Gerar hash da senha Loki: htpasswd -nB loki-agent
+#     e setar LOKI_BASIC_AUTH_USERS no .env do Portainer
+#
+# Acesso:
+#   Grafana: https://grafana.oliveiraeolivi.cloud
+#   Loki:    https://loki.oliveiraeolivi.cloud (basic auth, só Alloy)
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # Loki — agregador de logs
+  # ═══════════════════════════════════════════════════════════════
+  loki:
+    image: grafana/loki:${LOKI_VERSION:-3.6.7}
+    volumes:
+      - loki-data:/loki
+    configs:
+      - source: loki-config
+        target: /etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - internal
+      - network_swarm_public
+    deploy:
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        # Router — HTTPS com basic auth (Alloy envia logs aqui)
+        - "traefik.http.routers.loki.rule=Host(`loki.oliveiraeolivi.cloud`)"
+        - "traefik.http.routers.loki.entrypoints=websecure"
+        - "traefik.http.routers.loki.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.loki.middlewares=loki-auth"
+        - "traefik.http.routers.loki.service=loki"
+        # Service
+        - "traefik.http.services.loki.loadbalancer.server.port=3100"
+        # Middleware — basic auth
+        - "traefik.http.middlewares.loki-auth.basicauth.users=${LOKI_BASIC_AUTH_USERS}"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Grafana — dashboards e alertas
+  # ═══════════════════════════════════════════════════════════════
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-12.4.0}
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD}
+      - GF_SERVER_ROOT_URL=https://grafana.oliveiraeolivi.cloud
+    volumes:
+      - grafana-data:/var/lib/grafana
+    configs:
+      - source: grafana-datasources
+        target: /etc/grafana/provisioning/datasources/ds.yaml
+      - source: grafana-dashboards-provider
+        target: /etc/grafana/provisioning/dashboards/dashboards.yaml
+      - source: grafana-dashboard-oli-scraper
+        target: /etc/grafana/provisioning/dashboards/oli-scraper.json
+    networks:
+      - internal
+      - network_swarm_public
+    deploy:
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          memory: 256M
+      labels:
+        - "traefik.enable=true"
+        # Router — HTTPS
+        - "traefik.http.routers.grafana.rule=Host(`grafana.oliveiraeolivi.cloud`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.grafana.service=grafana"
+        # Service
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+  # ═══════════════════════════════════════════════════════════════
+  # Alloy — coletor de logs local (containers neste host)
+  # ═══════════════════════════════════════════════════════════════
+  alloy:
+    image: grafana/alloy:${ALLOY_VERSION:-v1.13.2}
+    environment:
+      ALLOY_DEPLOY_MODE: docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker:/var/lib/docker:ro
+    configs:
+      - source: alloy-config
+        target: /etc/alloy/config.alloy
+    command: >
+      run
+      --server.http.listen-addr=0.0.0.0:12345
+      --storage.path=/var/lib/alloy/data
+      /etc/alloy/config.alloy
+    networks:
+      - internal
+    deploy:
+      mode: global
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          memory: 256M
+
+# ═══════════════════════════════════════════════════════════════
+# Configs — injetados como arquivos nos containers
+# ═══════════════════════════════════════════════════════════════
+configs:
+  loki-config:
+    file: ./loki/loki-config.yaml
+  alloy-config:
+    file: ./alloy/config.alloy
+  grafana-datasources:
+    file: ./grafana/datasources.yaml
+  grafana-dashboards-provider:
+    file: ./grafana/dashboards/dashboards.yaml
+  grafana-dashboard-oli-scraper:
+    file: ./grafana/dashboards/oli-scraper.json
+
+volumes:
+  loki-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  internal:
+    driver: overlay
+  network_swarm_public:
+    external: true
+    name: network_swarm_public

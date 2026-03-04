@@ -1,0 +1,94 @@
+// ═══════════════════════════════════════════════════════════════
+// Alloy config — agent REMOTO
+// Roda em hosts externos, envia logs via HTTPS para o Loki central.
+//
+// Uso: copie este arquivo para o host remoto e ajuste as env vars:
+//   LOKI_URL=https://loki.oliveiraeolivi.cloud/loki/api/v1/push
+//   LOKI_USER=loki-agent
+//   LOKI_PASSWORD=<senha>
+// ═══════════════════════════════════════════════════════════════
+
+// --------------------------------------------------------------
+// 1. Descoberta de containers via Docker socket
+// --------------------------------------------------------------
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "docker_logs" {
+  targets = []
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_project"]
+    target_label  = "project"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+  }
+}
+
+// --------------------------------------------------------------
+// 2. Coleta de logs dos containers
+// --------------------------------------------------------------
+loki.source.docker "default" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.docker_logs.rules
+  forward_to    = [loki.process.pipeline.receiver]
+}
+
+// --------------------------------------------------------------
+// 3. Pipeline de processamento
+// --------------------------------------------------------------
+loki.process "pipeline" {
+  forward_to = [loki.write.remote.receiver]
+
+  // Descarta logs do próprio Alloy
+  stage.drop {
+    source     = "container"
+    expression = "(alloy)"
+  }
+
+  // Parseia JSON dos workers (structlog)
+  stage.json {
+    expressions = {
+      level   = "level",
+      event   = "event",
+      source  = "source",
+      job_id  = "job_id",
+    }
+  }
+
+  stage.labels {
+    values = {
+      level = "",
+    }
+  }
+}
+
+// --------------------------------------------------------------
+// 4. Envio para Loki central via HTTPS + basic auth
+// --------------------------------------------------------------
+loki.write "remote" {
+  endpoint {
+    url = env("LOKI_URL")
+
+    basic_auth {
+      username = env("LOKI_USER")
+      password = env("LOKI_PASSWORD")
+    }
+  }
+}

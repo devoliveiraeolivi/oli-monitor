@@ -84,11 +84,11 @@ loki.process "pipeline" {
 // --------------------------------------------------------------
 loki.write "remote" {
   endpoint {
-    url = env("LOKI_URL")
+    url = sys.env("LOKI_URL")
 
     basic_auth {
-      username = env("LOKI_USER")
-      password = env("LOKI_PASSWORD")
+      username = sys.env("LOKI_USER")
+      password = sys.env("LOKI_PASSWORD")
     }
   }
 }

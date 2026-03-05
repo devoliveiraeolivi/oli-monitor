@@ -61,7 +61,7 @@ services:
         target: /etc/grafana/provisioning/datasources/ds.yaml
       - source: grafana-dashboards-provider
         target: /etc/grafana/provisioning/dashboards/dashboards.yaml
-      - source: grafana-dashboard-oli-scraper-v2
+      - source: grafana-dashboard-oli-scraper-v3
         target: /etc/grafana/provisioning/dashboards/oli-scraper.json
     networks:
       - internal
@@ -122,7 +122,7 @@ configs:
     file: ./grafana/datasources.yaml
   grafana-dashboards-provider:
     file: ./grafana/dashboards/dashboards.yaml
-  grafana-dashboard-oli-scraper-v2:
+  grafana-dashboard-oli-scraper-v3:
     file: ./grafana/dashboards/oli-scraper.json
 
 volumes:

@@ -689,7 +689,14 @@
         {
           "id": "organize",
           "options": {
-            "excludeByName": { "id": true, "tsNs": true, "Line": true, "labels": true, "job_id": true },
+            "excludeByName": {
+              "id": true, "tsNs": true, "Line": true, "labels": true, "job_id": true,
+              "labelTypes": true, "container": true, "detected_level": true,
+              "service": true, "success": true, "event": true,
+              "service_name": true, "compose_service": true, "source": true,
+              "filename": true, "job": true, "level": true,
+              "stream": true, "exporter": true, "instance": true
+            },
             "indexByName": {
               "Time": 0,
               "numero_processo": 1,

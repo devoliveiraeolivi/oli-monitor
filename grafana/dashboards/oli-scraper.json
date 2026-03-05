@@ -762,19 +762,18 @@
         "legend": { "calcs": ["mean", "min"], "displayMode": "list", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
-      "title": "Score Médio de Qualidade / 5min",
+      "title": "Score Médio de Qualidade",
       "type": "timeseries",
-      "interval": "5m",
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_criticos [$__interval]))",
+          "expr": "avg(avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_criticos [$__auto]))",
           "legendFormat": "campos críticos",
           "refId": "A"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_secoes [$__interval]))",
+          "expr": "avg(avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_secoes [$__auto]))",
           "legendFormat": "seções",
           "refId": "B"
         }
@@ -816,25 +815,24 @@
         "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom" },
         "tooltip": { "mode": "multi", "sort": "desc" }
       },
-      "title": "PDF Status / 5min",
+      "title": "PDF Status",
       "type": "timeseries",
-      "interval": "5m",
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"uploaded\" [$__interval]))",
+          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"uploaded\" [$__auto]))",
           "legendFormat": "uploaded",
           "refId": "A"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"falhou\" [$__interval]))",
+          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"falhou\" [$__auto]))",
           "legendFormat": "falhou",
           "refId": "B"
         },
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"indisponivel\" [$__interval]))",
+          "expr": "sum(count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"indisponivel\" [$__auto]))",
           "legendFormat": "indisponivel",
           "refId": "C"
         }

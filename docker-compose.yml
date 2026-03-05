@@ -42,8 +42,8 @@ services:
         - "traefik.http.routers.loki.service=loki"
         # Service
         - "traefik.http.services.loki.loadbalancer.server.port=3100"
-        # Middleware — basic auth
-        - "traefik.http.middlewares.loki-auth.basicauth.users=${LOKI_BASIC_AUTH_USERS}"
+        # Middleware — basic auth (hash bcrypt gerado via htpasswd -nB)
+        - "traefik.http.middlewares.loki-auth.basicauth.users=loki-agent:$$2y$$05$$zlPnCgTjJ6ITiPpgUPkg9Oy.M0ojLlv9MhqDyXn93WWeKlZapBN4K"
 
   # ═══════════════════════════════════════════════════════════════
   # Grafana — dashboards e alertas

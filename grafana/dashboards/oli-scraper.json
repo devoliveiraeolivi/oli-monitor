@@ -575,13 +575,268 @@
     {
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 35 },
+      "id": 104,
+      "title": "Qualidade",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "filterable": true }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "q_criticos" },
+            "properties": [
+              { "id": "custom.width", "value": 90 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "yellow", "value": 0.5 },
+                    { "color": "green", "value": 1 }
+                  ]
+                }
+              },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "q_secoes" },
+            "properties": [
+              { "id": "custom.width", "value": 90 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "red", "value": null },
+                    { "color": "yellow", "value": 0.5 },
+                    { "color": "green", "value": 0.8 }
+                  ]
+                }
+              },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "basic" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "q_pdf" },
+            "properties": [
+              { "id": "custom.width", "value": 120 },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "uploaded": { "text": "OK", "color": "green" } } },
+                { "type": "value", "options": { "falhou": { "text": "FALHOU", "color": "red" } } },
+                { "type": "value", "options": { "indisponivel": { "text": "N/D", "color": "yellow" } } },
+                { "type": "value", "options": { "nao_solicitado": { "text": "-", "color": "text" } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "q_warnings" },
+            "properties": [
+              { "id": "custom.width", "value": 80 },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green", "value": null },
+                    { "color": "yellow", "value": 1 },
+                    { "color": "red", "value": 5 }
+                  ]
+                }
+              },
+              { "id": "color", "value": { "mode": "thresholds" } },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Time" },
+            "properties": [{ "id": "custom.width", "value": 150 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "numero_processo" },
+            "properties": [{ "id": "custom.width", "value": 220 }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 36 },
+      "id": 40,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "Time", "desc": true }],
+        "footer": { "show": false }
+      },
+      "title": "Qualidade por Job",
+      "type": "table",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | q_criticos != \"\"",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": { "source": "labels", "format": "kvp" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "id": true, "tsNs": true, "Line": true, "labels": true, "job_id": true },
+            "indexByName": {
+              "Time": 0,
+              "numero_processo": 1,
+              "q_criticos": 2,
+              "q_secoes": 3,
+              "q_pdf": 4,
+              "q_warnings": 5,
+              "q_ausentes": 6,
+              "progress": 7
+            },
+            "renameByName": {
+              "numero_processo": "Processo",
+              "q_criticos": "Críticos",
+              "q_secoes": "Seções",
+              "q_pdf": "PDF",
+              "q_warnings": "Warnings",
+              "q_ausentes": "Campos Ausentes",
+              "progress": "Progresso"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "campos críticos" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "seções" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 46 },
+      "id": 41,
+      "options": {
+        "legend": { "calcs": ["mean", "min"], "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "Score Médio de Qualidade / 5min",
+      "type": "timeseries",
+      "interval": "5m",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_criticos [$__interval])",
+          "legendFormat": "campos críticos",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "avg_over_time({service=\"worker\"} |= \"job_completed\" | json | success=\"true\" | unwrap q_secoes [$__interval])",
+          "legendFormat": "seções",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "uploaded" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "falhou" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "indisponivel" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "yellow", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 46 },
+      "id": 42,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "title": "PDF Status / 5min",
+      "type": "timeseries",
+      "interval": "5m",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"uploaded\" [$__interval])",
+          "legendFormat": "uploaded",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"falhou\" [$__interval])",
+          "legendFormat": "falhou",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "count_over_time({service=\"worker\"} |= \"job_completed\" | json | q_pdf=\"indisponivel\" [$__interval])",
+          "legendFormat": "indisponivel",
+          "refId": "C"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
       "id": 103,
       "title": "Logs Recentes",
       "type": "row"
     },
     {
       "datasource": { "type": "loki", "uid": "loki" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 54 },
       "id": 30,
       "options": {
         "dedupStrategy": "none",
@@ -605,7 +860,7 @@
     },
     {
       "datasource": { "type": "loki", "uid": "loki" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 44 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 62 },
       "id": 32,
       "options": {
         "dedupStrategy": "none",
@@ -629,7 +884,7 @@
     },
     {
       "datasource": { "type": "loki", "uid": "loki" },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 52 },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 70 },
       "id": 31,
       "options": {
         "dedupStrategy": "none",

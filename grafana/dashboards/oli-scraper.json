@@ -606,6 +606,30 @@
     {
       "datasource": { "type": "loki", "uid": "loki" },
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 44 },
+      "id": 32,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "title": "Warnings Recentes",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "expr": "{service=\"worker\", level=\"warning\"} | json | line_format \"{{.event}} \\u2502 {{.error}} \\u2502 processo={{.numero_processo}} \\u2502 job={{.job_id}} \\u2502 {{.duration_ms}}ms\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 52 },
       "id": 31,
       "options": {
         "dedupStrategy": "none",

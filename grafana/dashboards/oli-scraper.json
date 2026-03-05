@@ -622,7 +622,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
-          "expr": "{service=\"worker\", level=\"warning\"} | json | line_format \"{{.event}} \\u2502 {{.error}} \\u2502 processo={{.numero_processo}} \\u2502 job={{.job_id}} \\u2502 {{.duration_ms}}ms\"",
+          "expr": "{service=\"worker\", level=\"warning\"} | json | line_format \"{{.event}} \\u2502 error_type={{.error_type}} \\u2502 matched={{.matched_pattern}} \\u2502 {{.error}} \\u2502 processo={{.numero_processo}} \\u2502 job={{.job_id}} \\u2502 {{.duration_ms}}ms\"",
           "refId": "A"
         }
       ]

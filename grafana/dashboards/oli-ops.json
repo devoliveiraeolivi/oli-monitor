@@ -1,0 +1,482 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_SUPABASE",
+      "label": "Supabase (PostgreSQL)",
+      "description": "Conexão PostgreSQL com o Supabase OPS",
+      "type": "datasource",
+      "pluginId": "grafana-postgresql-datasource",
+      "pluginName": "PostgreSQL"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "12.0.0" },
+    { "type": "datasource", "id": "grafana-postgresql-datasource", "name": "PostgreSQL", "version": "1.0.0" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "piechart", "name": "Pie chart", "version": "" },
+    { "type": "panel", "id": "barchart", "name": "Bar chart", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" }
+  ],
+  "id": null,
+  "uid": "ops-visao-operacional",
+  "title": "OPS — Visão Operacional",
+  "description": "Estado atual do Supabase OPS: workflows, batches, jobs, erros e incidentes",
+  "tags": ["ops", "supabase", "oli"],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Contadores",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Workflows Ativos",
+      "description": "Workflows com status = running",
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS value FROM workflows WHERE status = 'running'",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "blue" }] }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Batches Pendentes",
+      "description": "Batches com status = ready (aguardando claim)",
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS value FROM batches WHERE status = 'ready'",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "yellow" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "yellow" }] }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Batches em Execução",
+      "description": "Batches com status = claimed (worker processando)",
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS value FROM batches WHERE status = 'claimed'",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "orange" }] }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Jobs Sucesso",
+      "description": "Jobs concluídos com sucesso",
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS value FROM jobs WHERE status = 'success'",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "green" }] }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Jobs com Erro",
+      "description": "Jobs com status = failed",
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT count(*) AS value FROM jobs WHERE status = 'failed'",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "red" }] }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Taxa de Erro (%)",
+      "description": "Jobs falhados / (sucesso + falhados)",
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT ROUND(\n  count(*) FILTER (WHERE status = 'failed') * 100.0\n  / NULLIF(count(*) FILTER (WHERE status IN ('success', 'failed')), 0)\n, 1) AS value\nFROM jobs",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 5, "color": "yellow" },
+              { "value": 20, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] }, "textMode": "value", "colorMode": "background" }
+    },
+
+    {
+      "id": 200,
+      "type": "row",
+      "title": "Distribuição por Status",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Workflows por Status",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT status, count(*) AS total FROM workflows GROUP BY status ORDER BY total DESC",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "running" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "completed" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "paused" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }] },
+          { "matcher": { "id": "byName", "options": "cancelled" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "gray" } }] },
+          { "matcher": { "id": "byName", "options": "pending" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }, "pieType": "donut", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 8,
+      "type": "piechart",
+      "title": "Batches por Status",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT status, count(*) AS total FROM batches GROUP BY status ORDER BY total DESC",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "done" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "claimed" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "ready" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }] },
+          { "matcher": { "id": "byName", "options": "partial" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "failed" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }, "pieType": "donut", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 9,
+      "type": "piechart",
+      "title": "Jobs por Status",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 6 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT status, count(*) AS total FROM jobs GROUP BY status ORDER BY total DESC",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "success" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }] },
+          { "matcher": { "id": "byName", "options": "running" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+          { "matcher": { "id": "byName", "options": "pending" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }] },
+          { "matcher": { "id": "byName", "options": "failed" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "cancelled" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "gray" } }] }
+        ]
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] }, "pieType": "donut", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+
+    {
+      "id": 300,
+      "type": "row",
+      "title": "Erros",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "collapsed": false
+    },
+    {
+      "id": 10,
+      "type": "barchart",
+      "title": "Top Error Codes",
+      "description": "Códigos de erro mais frequentes em jobs falhados",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 15 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  COALESCE(error_code, 'sem_codigo') AS error_code,\n  count(*) AS total\nFROM jobs\nWHERE status = 'failed'\nGROUP BY error_code\nORDER BY total DESC\nLIMIT 10",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "xTickLabelRotation": 0, "showValue": "always", "barWidth": 0.8 }
+    },
+    {
+      "id": 11,
+      "type": "barchart",
+      "title": "Erros por Sistema",
+      "description": "Distribuição de jobs falhados por system_key",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 15 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  system_key,\n  count(*) AS total\nFROM jobs\nWHERE status = 'failed'\nGROUP BY system_key\nORDER BY total DESC\nLIMIT 10",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": { "orientation": "horizontal", "xTickLabelRotation": 0, "showValue": "always", "barWidth": 0.8 }
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "Jobs com Erro — Detalhe",
+      "description": "Últimos jobs falhados com tipo de erro, mensagem e fase (usa v_job_errors)",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 23 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  j.system_key,\n  j.search_key,\n  j.scope,\n  j.type,\n  j.error_code,\n  j.retry_count,\n  j.duration_ms,\n  last_err->>'error_type' AS erro_tipo,\n  last_err->>'message' AS erro_msg,\n  last_err->>'stage' AS erro_fase,\n  (last_err->>'retryable')::BOOLEAN AS retryable,\n  w.workflow_key,\n  jsonb_array_length(j.error_log) AS tentativas,\n  j.finished_at\nFROM jobs j\nJOIN workflows w ON w.id = j.workflow_id\nCROSS JOIN LATERAL (\n  SELECT CASE\n    WHEN jsonb_array_length(j.error_log) > 0\n    THEN j.error_log->(jsonb_array_length(j.error_log) - 1)\n    ELSE NULL\n  END AS last_err\n) AS _last\nWHERE j.status = 'failed'\nORDER BY j.finished_at DESC\nLIMIT 50",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "erro_msg" },
+            "properties": [{ "id": "custom.width", "value": 400 }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "finished_at" },
+            "properties": [{ "id": "unit", "value": "dateTimeAsIso" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "duration_ms" },
+            "properties": [{ "id": "unit", "value": "ms" }]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "finished_at", "desc": true }] }
+    },
+
+    {
+      "id": 400,
+      "type": "row",
+      "title": "Workflows",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 },
+      "collapsed": false
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "Progresso dos Workflows",
+      "description": "Todos os workflows com contadores de batches e jobs",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 34 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  workflow_key,\n  scope,\n  type,\n  status,\n  priority,\n  total_batches,\n  completed_batches,\n  failed_batches,\n  total_jobs,\n  completed_jobs,\n  failed_jobs,\n  CASE WHEN total_jobs > 0\n    THEN ROUND((completed_jobs + failed_jobs) * 100.0 / total_jobs, 1)\n    ELSE 0\n  END AS progresso_pct,\n  started_at,\n  completed_at\nFROM workflows\nORDER BY\n  CASE status\n    WHEN 'running' THEN 1\n    WHEN 'paused' THEN 2\n    WHEN 'pending' THEN 3\n    WHEN 'completed' THEN 4\n    WHEN 'cancelled' THEN 5\n  END,\n  started_at DESC",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "progresso_pct" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "value": null, "color": "red" },
+                    { "value": 50, "color": "yellow" },
+                    { "value": 90, "color": "green" }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "status" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "running": { "text": "Running", "color": "blue" }, "completed": { "text": "Completed", "color": "green" }, "paused": { "text": "Paused", "color": "yellow" }, "pending": { "text": "Pending", "color": "orange" }, "cancelled": { "text": "Cancelled", "color": "gray" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "started_at" },
+            "properties": [{ "id": "unit", "value": "dateTimeAsIso" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "completed_at" },
+            "properties": [{ "id": "unit", "value": "dateTimeAsIso" }]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [] }
+    },
+
+    {
+      "id": 500,
+      "type": "row",
+      "title": "Incidentes",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 42 },
+      "collapsed": false
+    },
+    {
+      "id": 14,
+      "type": "table",
+      "title": "Incidentes Abertos",
+      "description": "Incidentes não resolvidos",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 43 },
+      "datasource": { "type": "grafana-postgresql-datasource", "uid": "${DS_SUPABASE}" },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawSql": "SELECT\n  type,\n  severity,\n  system_key,\n  title,\n  description,\n  created_at\nFROM incidents\nWHERE resolved = false\nORDER BY\n  CASE severity\n    WHEN 'critical' THEN 1\n    WHEN 'error' THEN 2\n    WHEN 'warning' THEN 3\n    WHEN 'info' THEN 4\n  END,\n  created_at DESC",
+          "rawQuery": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "severity" },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  { "type": "value", "options": { "critical": { "text": "CRITICAL", "color": "red" }, "error": { "text": "ERROR", "color": "orange" }, "warning": { "text": "WARNING", "color": "yellow" }, "info": { "text": "INFO", "color": "blue" } } }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "created_at" },
+            "properties": [{ "id": "unit", "value": "dateTimeAsIso" }]
+          }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [{ "displayName": "created_at", "desc": true }] }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "version": 1
+}

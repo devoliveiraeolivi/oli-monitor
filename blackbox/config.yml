@@ -1,0 +1,26 @@
+# Blackbox Exporter — probes HTTP/HTTPS
+# Usado pelo Prometheus para verificar disponibilidade end-to-end.
+
+modules:
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      follow_redirects: true
+      preferred_ip_protocol: ip4
+
+  http_2xx_basic_auth:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      follow_redirects: true
+      preferred_ip_protocol: ip4
+      basic_auth:
+        username: "${PROBE_BASIC_AUTH_USER}"
+        password: "${PROBE_BASIC_AUTH_PASSWORD}"

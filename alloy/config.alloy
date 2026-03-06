@@ -86,3 +86,33 @@ loki.write "local" {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// Host Metrics — CPU, RAM, disco, rede (node_exporter built-in)
+// Requer volumes: /proc:/host/proc:ro, /sys:/host/sys:ro, /:/host/rootfs:ro
+// ══════════════════════════════════════════════════════════════
+
+// --------------------------------------------------------------
+// 5. Exportador de metricas do host (prometheus.exporter.unix)
+// --------------------------------------------------------------
+prometheus.exporter.unix "host" {
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+  rootfs_path = "/host/rootfs"
+}
+
+// --------------------------------------------------------------
+// 6. Scrape das metricas do host e forward para Prometheus
+// --------------------------------------------------------------
+prometheus.scrape "host_metrics" {
+  targets    = prometheus.exporter.unix.host.targets
+  forward_to = [prometheus.remote_write.local.receiver]
+
+  scrape_interval = "15s"
+}
+
+prometheus.remote_write "local" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}

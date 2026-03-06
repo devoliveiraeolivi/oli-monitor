@@ -1,11 +1,18 @@
 // ═══════════════════════════════════════════════════════════════
 // Alloy config — agent REMOTO
-// Roda em hosts externos, envia logs via HTTPS para o Loki central.
+// Roda em hosts externos, envia logs via HTTPS para o Loki central
+// e host metrics via remote_write para o Prometheus central.
 //
 // Uso: copie este arquivo para o host remoto e ajuste as env vars:
 //   LOKI_URL=https://loki.oliveiraeolivi.cloud/loki/api/v1/push
 //   LOKI_USER=loki-agent
 //   LOKI_PASSWORD=<senha>
+//   PROMETHEUS_URL=https://prometheus.oliveiraeolivi.cloud/api/v1/write
+//   PROMETHEUS_USER=<user>
+//   PROMETHEUS_PASSWORD=<senha>
+//
+// Volumes necessarios para host metrics:
+//   /proc:/host/proc:ro  /sys:/host/sys:ro  /:/host/rootfs:ro
 // ═══════════════════════════════════════════════════════════════
 
 // --------------------------------------------------------------
@@ -89,6 +96,40 @@ loki.write "remote" {
     basic_auth {
       username = sys.env("LOKI_USER")
       password = sys.env("LOKI_PASSWORD")
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// Host Metrics — CPU, RAM, disco, rede (node_exporter built-in)
+// ══════════════════════════════════════════════════════════════
+
+// --------------------------------------------------------------
+// 5. Exportador de metricas do host
+// --------------------------------------------------------------
+prometheus.exporter.unix "host" {
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+  rootfs_path = "/host/rootfs"
+}
+
+// --------------------------------------------------------------
+// 6. Scrape e envio para Prometheus central via HTTPS + basic auth
+// --------------------------------------------------------------
+prometheus.scrape "host_metrics" {
+  targets    = prometheus.exporter.unix.host.targets
+  forward_to = [prometheus.remote_write.central.receiver]
+
+  scrape_interval = "15s"
+}
+
+prometheus.remote_write "central" {
+  endpoint {
+    url = sys.env("PROMETHEUS_URL")
+
+    basic_auth {
+      username = sys.env("PROMETHEUS_USER")
+      password = sys.env("PROMETHEUS_PASSWORD")
     }
   }
 }

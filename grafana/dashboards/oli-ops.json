@@ -336,7 +336,7 @@
         {
           "refId": "A",
           "format": "table",
-          "rawSql": "SELECT\n  j.system_key,\n  j.search_key,\n  j.scope,\n  j.type,\n  j.error_code,\n  j.retry_count,\n  j.duration_ms,\n  last_err->>'error_type' AS erro_tipo,\n  last_err->>'message' AS erro_msg,\n  last_err->>'stage' AS erro_fase,\n  (last_err->>'retryable')::BOOLEAN AS retryable,\n  w.workflow_key,\n  jsonb_array_length(j.error_log) AS tentativas,\n  j.finished_at\nFROM jobs j\nJOIN workflows w ON w.id = j.workflow_id\nCROSS JOIN LATERAL (\n  SELECT CASE\n    WHEN jsonb_array_length(j.error_log) > 0\n    THEN j.error_log->(jsonb_array_length(j.error_log) - 1)\n    ELSE NULL\n  END AS last_err\n) AS _last\nWHERE j.status = 'failed'\nORDER BY j.finished_at DESC\nLIMIT 50",
+          "rawSql": "SELECT\n  j.system_key,\n  j.search_key,\n  j.scope,\n  j.type,\n  j.retry_count,\n  last_err->>'error_type' AS erro_tipo,\n  last_err->>'message' AS erro_msg,\n  last_err->>'stage' AS erro_fase,\n  (last_err->>'duration_ms')::INT AS duration_ms,\n  (last_err->>'retryable')::BOOLEAN AS retryable,\n  w.workflow_key,\n  jsonb_array_length(j.error_log) AS tentativas,\n  j.finished_at\nFROM jobs j\nJOIN workflows w ON w.id = j.workflow_id\nCROSS JOIN LATERAL (\n  SELECT CASE\n    WHEN jsonb_array_length(j.error_log) > 0\n    THEN j.error_log->(jsonb_array_length(j.error_log) - 1)\n    ELSE NULL\n  END AS last_err\n) AS _last\nWHERE j.status = 'failed'\nORDER BY j.finished_at DESC\nLIMIT 50",
           "rawQuery": true
         }
       ],

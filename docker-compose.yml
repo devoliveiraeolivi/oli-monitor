@@ -58,7 +58,7 @@ services:
     volumes:
       - prometheus-data:/prometheus
     configs:
-      - source: prometheus-config-v2
+      - source: prometheus-config-v3
         target: /etc/prometheus/prometheus.yml
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -203,7 +203,7 @@ services:
 configs:
   loki-config:
     file: ./loki/loki-config.yaml
-  prometheus-config-v2:
+  prometheus-config-v3:
     file: ./prometheus/prometheus.yml
   blackbox-config:
     file: ./blackbox/config.yml

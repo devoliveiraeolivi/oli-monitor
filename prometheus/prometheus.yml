@@ -56,8 +56,11 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          - https://grafana.oliveiraeolivi.cloud
+          - https://oliveiraeolivi.cloud
           - https://ops.oliveiraeolivi.cloud
+          - https://bi.oliveiraeolivi.cloud
+          - https://grafana.oliveiraeolivi.cloud
+          - https://gateway.oliveiraeolivi.cloud/health
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

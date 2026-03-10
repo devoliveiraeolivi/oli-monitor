@@ -7,7 +7,8 @@
 // 1. Descoberta de containers via Docker socket
 // --------------------------------------------------------------
 discovery.docker "containers" {
-  host = "unix:///var/run/docker.sock"
+  host             = "unix:///var/run/docker.sock"
+  refresh_interval = "10s"  // default 60s — detecta containers removidos mais rápido
 }
 
 // Extrai labels úteis dos containers.

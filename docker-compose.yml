@@ -24,7 +24,7 @@ services:
     volumes:
       - loki-data:/loki
     configs:
-      - source: loki-config
+      - source: loki-config-v2
         target: /etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
     networks:
@@ -136,6 +136,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
+      - /etc/machine-id:/etc/machine-id:ro
     networks:
       - internal
     deploy:
@@ -180,7 +181,7 @@ services:
       - /sys:/host/sys:ro
       - /:/host/rootfs:ro
     configs:
-      - source: alloy-config-v2
+      - source: alloy-config-v3
         target: /etc/alloy/config.alloy
     command: >
       run
@@ -201,13 +202,13 @@ services:
 # Configs — injetados como arquivos nos containers
 # ═══════════════════════════════════════════════════════════════
 configs:
-  loki-config:
+  loki-config-v2:
     file: ./loki/loki-config.yaml
   prometheus-config-v3:
     file: ./prometheus/prometheus.yml
   blackbox-config:
     file: ./blackbox/config.yml
-  alloy-config-v2:
+  alloy-config-v3:
     file: ./alloy/config.alloy
   grafana-datasources:
     file: ./grafana/datasources.yaml

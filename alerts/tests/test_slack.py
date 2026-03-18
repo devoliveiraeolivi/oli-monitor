@@ -7,7 +7,7 @@ import httpx
 import pytest
 
 from app.models import AlertLevel
-from app.slack import SlackClient, SlackError, DEFAULT_CHANNELS
+from app.slack import SlackClient, SlackError
 
 
 # --- Formatting ---

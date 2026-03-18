@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /c/Apps/oli-gateway log --oneline origin/main..HEAD)",
+      "Bash(git -C /c/Apps/oli-gateway status -b --short)",
+      "Bash(git -C /c/Apps/oli-gateway status)"
+    ]
+  }
+}

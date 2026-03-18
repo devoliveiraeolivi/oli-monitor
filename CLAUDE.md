@@ -31,6 +31,7 @@ Blackbox (probes HTTP)     ──scrape──► prometheus:9090 ─────
 - **Grafana** — dashboards legado (sera removido apos migracao para oli-ops).
 - **Alloy (local)** — coleta logs de containers + host metrics (CPU, RAM, disco, rede).
 - **Alloy (remoto)** — template em `alloy/remote/` para agents em outros hosts (ex: Hostinger).
+- **Alerts Bot** — servico FastAPI de notificacao Telegram. `POST /notify` com API key. Qualquer app OLI envia alertas.
 
 ### Data Flow
 
@@ -45,6 +46,7 @@ Blackbox (probes HTTP)     ──scrape──► prometheus:9090 ─────
 | Blackbox | Prometheus scrape | Prometheus :9090 | probe_success, latencia, status code |
 | Supabase OPS | Prometheus scrape (HTTPS) | Prometheus :9090 | PG connections, cache, queries |
 | Supabase Data | Prometheus scrape (HTTPS) | Prometheus :9090 | PG connections, cache, queries |
+| Apps OLI (POST /notify) | HTTPS + API key | Alerts Bot :8000 | Telegram notifications |
 
 ### Labels (Loki)
 
@@ -72,6 +74,15 @@ Todos os logs chegam com estas labels:
 │       ├── oli-scraper.json    # Dashboard oli-scraper
 │       ├── oli-indexer.json    # Dashboard oli-indexer
 │       └── oli-ops.json        # Dashboard oli-ops
+├── alerts/
+│   ├── Dockerfile              # FastAPI alerts bot
+│   ├── requirements.txt        # Dependencias Python
+│   └── app/
+│       ├── main.py             # App + lifespan + endpoints
+│       ├── telegram.py         # Cliente Telegram Bot API
+│       ├── models.py           # Pydantic request/response
+│       ├── deps.py             # API key validation
+│       └── logging_setup.py    # structlog config
 ├── alloy/
 │   ├── config.alloy            # Agent local (logs + host metrics)
 │   └── remote/
@@ -87,6 +98,19 @@ Todos os logs chegam com estas labels:
 - Prometheus basic auth via Traefik: setar `PROMETHEUS_BASIC_AUTH_USERS` no env do Portainer
 - Supabase metrics: requer plano Pro + service_role key de cada projeto
 - Blackbox probes: adicionar URLs em `prometheus.yml` no job `blackbox-http`
+
+### Alerts Bot
+
+FastAPI service em `alerts/`. Recebe `POST /notify` com `X-API-Key` e envia mensagem formatada
+para canal Telegram. Primeiro servico Python da stack.
+
+**Endpoints:**
+- `POST /notify` — envia notificacao (requer X-API-Key)
+- `GET /health` — health check (sem auth)
+
+**Env vars:** VAULT_ADDR, VAULT_ROLE_ID, VAULT_SECRET_ID, LOG_FORMAT
+**Credenciais:** bot_token e chat_id em Vault `infra/telegram`, api_key em `infra/alerts`
+**URL:** https://alerts.oliveiraeolivi.cloud
 
 ## Ecosystem
 

@@ -198,6 +198,35 @@ services:
         limits:
           memory: 256M
 
+  # ═══════════════════════════════════════════════════════════════
+  # Alerts Bot — notificacao Telegram para o ecossistema OLI
+  # POST /notify com X-API-Key → formata e envia para canal Telegram
+  # ═══════════════════════════════════════════════════════════════
+  alerts:
+    image: oli-alerts:latest
+    build: ./alerts
+    environment:
+      - VAULT_ADDR=${VAULT_ADDR:-https://auth.oliveiraeolivi.cloud}
+      - VAULT_ROLE_ID=${VAULT_ROLE_ID}
+      - VAULT_SECRET_ID=${VAULT_SECRET_ID}
+      - LOG_FORMAT=json
+    networks:
+      - internal
+      - network_swarm_public
+    deploy:
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          memory: 128M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.alerts.rule=Host(`alerts.oliveiraeolivi.cloud`)"
+        - "traefik.http.routers.alerts.entrypoints=websecure"
+        - "traefik.http.routers.alerts.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.alerts.service=alerts"
+        - "traefik.http.services.alerts.loadbalancer.server.port=8000"
+
 # ═══════════════════════════════════════════════════════════════
 # Configs — injetados como arquivos nos containers
 # ═══════════════════════════════════════════════════════════════

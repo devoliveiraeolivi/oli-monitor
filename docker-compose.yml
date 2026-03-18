@@ -203,8 +203,7 @@ services:
   # POST /notify com X-API-Key → formata e envia para canal Telegram
   # ═══════════════════════════════════════════════════════════════
   alerts:
-    image: oli-alerts:latest
-    build: ./alerts
+    image: ghcr.io/devoliveiraeolivi/oli-alerts:latest
     environment:
       - VAULT_ADDR=${VAULT_ADDR:-https://auth.oliveiraeolivi.cloud}
       - VAULT_ROLE_ID=${VAULT_ROLE_ID}

@@ -1,3 +1,6 @@
 .env
 *.swp
 *.bak
+
+# Renderizado por scripts/render_configs.py (contem segredos)
+prometheus/prometheus.yml

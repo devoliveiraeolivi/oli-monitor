@@ -86,10 +86,9 @@ Receives Slack interaction payloads (button clicks). Not called by OLI apps dire
 **Current callers:** Only `oli-auth` calls `POST /notify`.
 
 **Coordinated deploy:**
-1. Update oli-auth to use new contract (`thread_key` field, expect `ts` instead of `message_id` in response)
-2. Deploy alerts bot with Slack integration
-3. Deploy oli-auth with updated client
-4. Remove `infra/telegram` secrets from Vault
+1. Deploy alerts bot with Slack integration (new contract live). oli-auth calls will fail temporarily but it uses fire-and-forget (`except Exception` → `return False`), so no impact.
+2. Deploy oli-auth with updated client (`thread_key` field, expect `ts` instead of `message_id`)
+3. Remove `infra/telegram` secrets from Vault
 
 **Rollback strategy:** If Slack integration fails in production, revert alerts bot image to previous tag (Telegram version still works). oli-auth's notify call will fail with connection/format errors but the app itself is unaffected (fire-and-forget pattern).
 
@@ -97,11 +96,13 @@ Receives Slack interaction payloads (button clicks). Not called by OLI apps dire
 
 ### Message Formatting (Block Kit)
 
-| Level | Color | Emoji |
-|-------|-------|-------|
+| Level | Color (attachment sidebar) | Emoji |
+|-------|---------------------------|-------|
 | critical | `#E01E5A` (red) | :red_circle: |
 | warning | `#ECB22E` (yellow) | :large_yellow_circle: |
 | info | `#2EB67D` (green) | :large_green_circle: |
+
+**Note:** Color sidebar requires the legacy `attachments` array. Messages use `attachments` with `blocks` inside for the colored sidebar + Block Kit structured content.
 
 **Message structure:**
 
@@ -124,7 +125,7 @@ Worker crashed at 2026-03-18T14:32:00Z
 - If found: post as reply (`thread_ts` parameter). If Slack returns `thread_not_found`, retry without `thread_ts` (post as new message) and update stored `ts`.
 - If not found: post new message, store returned `ts`
 - No `thread_key`: always new message
-- Storage: in-memory dict `{(app, thread_key): thread_ts}`
+- Storage: `cachetools.TTLCache` keyed by `(app, thread_key)` with 7-day TTL and max 1000 entries. Prevents unbounded growth.
 
 ### Channel Routing
 
@@ -142,15 +143,9 @@ Override via Vault `infra/slack` field `channel_map` (JSON string). Merge: Vault
 
 ## Interactions (`interactions.py`)
 
-### URL Verification
-
-When the Interactivity URL is first configured in Slack App settings, Slack sends a `url_verification` challenge:
-```json
-{"type": "url_verification", "challenge": "abc123"}
-```
-The endpoint must detect `type == "url_verification"` and echo the `challenge` value back. This happens once during setup.
-
 ### Button Interaction Flow
+
+**Note:** Slack's Interactivity URL does not require a `url_verification` handshake (that applies to the Events API only). The URL is configured in app settings and Slack sends interactions to it directly. The `signing_secret` comes from the app-level settings (Basic Information > App Credentials), not from bot token scopes.
 
 1. Slack sends POST with signed payload
 2. Validate signing secret (HMAC-SHA256 of body + timestamp + Slack signing version `v0`)
@@ -163,6 +158,7 @@ The endpoint must detect `type == "url_verification"` and echo the `challenge` v
 
 - Best-effort in memory. Container restart clears snooze state — acceptable for v1.
 - Snoozed alerts still post to thread, just without channel notification.
+- Snooze only applies when `thread_key` is present. Alerts without `thread_key` cannot be snoozed (buttons are still rendered, but snooze operates on `(app, thread_key)` — without a key, there's nothing to match against).
 
 ## Vault & Config
 

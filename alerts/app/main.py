@@ -113,7 +113,7 @@ async def notify(
     if req.level == AlertLevel.info:
         heartbeats: OrderedDict = app.state.heartbeats
         heartbeats[req.app] = datetime.now(timezone.utc).isoformat()
-        while len(heartbeats) > MAX_HEARTBEATS:
+        if len(heartbeats) > MAX_HEARTBEATS:
             heartbeats.popitem(last=False)
 
     # Check snooze — if snoozed, still post to thread but silently (no channel broadcast)
@@ -165,36 +165,30 @@ async def slack_interactions(request: Request) -> Response:
     alert_app = dados["app"]
     now = datetime.now(timezone.utc).strftime("%H:%M")
 
+    # Extract original attachment data (shared by both actions)
+    attachment = payload.get("message", {}).get("attachments", [{}])[0]
+    original_blocks = attachment.get("blocks", [])
+    color = attachment.get("color", "#2EB67D")
+    base_blocks = [b for b in original_blocks if b.get("type") != "actions"]
+
     if action == "acknowledge":
-        ack_block = {
+        status_block = {
             "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"\u2705 Acknowledged by @{user} at {now}",
-            },
+            "text": {"type": "mrkdwn", "text": f"\u2705 Acknowledged by @{user} at {now}"},
         }
-        original_blocks = payload.get("message", {}).get("attachments", [{}])[0].get("blocks", [])
-        updated_blocks = [b for b in original_blocks if b.get("type") != "actions"] + [ack_block]
-        color = payload.get("message", {}).get("attachments", [{}])[0].get("color", "#2EB67D")
-        await slack.atualizar_mensagem(channel_id, message_ts, updated_blocks, color)
+        await slack.atualizar_mensagem(channel_id, message_ts, base_blocks + [status_block], color)
         logger.info("slack_ack", user=user, app=alert_app, ts=message_ts)
 
     elif action == "snooze_30m":
-        snooze_cache: TTLCache = app.state.snooze_cache
         thread_key = dados["thread_key"]
         if thread_key:
+            snooze_cache: TTLCache = app.state.snooze_cache
             snooze_cache[(alert_app, thread_key)] = True
-        snooze_block = {
+        status_block = {
             "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"\U0001f634 Snoozed 30m by @{user}",
-            },
+            "text": {"type": "mrkdwn", "text": f"\U0001f634 Snoozed 30m by @{user}"},
         }
-        original_blocks = payload.get("message", {}).get("attachments", [{}])[0].get("blocks", [])
-        updated_blocks = [b for b in original_blocks if b.get("type") != "actions"] + [snooze_block]
-        color = payload.get("message", {}).get("attachments", [{}])[0].get("color", "#2EB67D")
-        await slack.atualizar_mensagem(channel_id, message_ts, updated_blocks, color)
+        await slack.atualizar_mensagem(channel_id, message_ts, base_blocks + [status_block], color)
         logger.info("slack_snooze", user=user, app=alert_app, ts=message_ts)
 
     return Response(status_code=200)

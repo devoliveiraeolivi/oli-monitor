@@ -92,6 +92,7 @@ class SlackClient:
         button_value = {"app": app, "level": level.value}
         if thread_key:
             button_value["thread_key"] = thread_key
+        value_json = json.dumps(button_value)
 
         actions_block = {
             "type": "actions",
@@ -101,13 +102,13 @@ class SlackClient:
                     "text": {"type": "plain_text", "text": "Acknowledge"},
                     "action_id": "acknowledge",
                     "style": "primary",
-                    "value": json.dumps(button_value),
+                    "value": value_json,
                 },
                 {
                     "type": "button",
                     "text": {"type": "plain_text", "text": "Snooze 30m"},
                     "action_id": "snooze_30m",
-                    "value": json.dumps(button_value),
+                    "value": value_json,
                 },
             ],
         }

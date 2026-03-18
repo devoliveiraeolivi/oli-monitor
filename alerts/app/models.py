@@ -17,15 +17,16 @@ class NotifyRequest(BaseModel):
     level: AlertLevel = Field(..., description="Nivel de severidade")
     title: str = Field(..., max_length=200, description="Titulo curto do alerta")
     detail: Optional[str] = Field(None, max_length=1000, description="Detalhe adicional")
+    thread_key: Optional[str] = Field(None, max_length=100, description="Chave de agrupamento em thread")
 
 
 class NotifyResponse(BaseModel):
     ok: bool
-    message_id: Optional[int] = None
+    ts: Optional[str] = None
     error: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
     status: str
-    telegram_connected: bool
+    slack_connected: bool
     last_heartbeats: dict[str, str] = {}

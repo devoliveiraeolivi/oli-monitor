@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **Arquitetura cross-repo:** Este repo faz parte do ecossistema OLI. Para decisões arquiteturais, ADRs, princípios cross-cutting e specs cross-repo, consulte [`oli-platform`](https://github.com/devoliveiraeolivi/oli-platform) — repositório-norte do ecossistema.
+
 ## Project Overview
 
 OLI Monitor é a stack de monitoramento centralizada do ecossistema OLI. Roda Loki + Prometheus + Grafana + Alloy + cAdvisor + Blackbox via Docker Swarm (Portainer) com Traefik na frente. Serve como backend de dados para o oli-ops (painel operacional).

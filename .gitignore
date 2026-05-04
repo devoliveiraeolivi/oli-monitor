@@ -5,3 +5,6 @@
 
 # Renderizado por scripts/render_configs.py (contem segredos)
 prometheus/prometheus.yml
+
+# Claude Code local settings (per-developer/machine, may contain inline secrets in allow-list)
+.claude/settings.local.json

@@ -61,20 +61,26 @@ loki.process "pipeline" {
     expression = "(alloy|grafana|loki|traefik)"
   }
 
-  // Parseia JSON dos workers (structlog já emite JSON em prod)
+  // Parseia JSON dos workers (structlog já emite JSON em prod).
+  // Schema Alloy aceita: { level, event, source, consumer, job_id, timestamp, ... }
+  // — emitido por oli-sdk (Python structlog desde v0.3, JS observability desde v0.10).
   stage.json {
     expressions = {
-      level   = "level",
-      event   = "event",
-      source  = "source",
-      job_id  = "job_id",
+      level    = "level",
+      event    = "event",
+      source   = "source",
+      consumer = "consumer",
+      job_id   = "job_id",
     }
   }
 
-  // Promove "level" como label para filtrar WARNING/ERROR no Grafana
+  // Promove "level" e "consumer" como labels para filtrar no Grafana / oli-ops.
+  // "consumer" tem cardinalidade baixa (~10 apps OLI: oli-app, oli-bi, oli-ops,
+  // oli-news, oli-indexer, oli-agent, anp-bi-etl, oli-scraper, oli-word, ...).
   stage.labels {
     values = {
-      level = "",
+      level    = "",
+      consumer = "",
     }
   }
 }

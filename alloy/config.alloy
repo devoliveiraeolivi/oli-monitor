@@ -64,23 +64,30 @@ loki.process "pipeline" {
   // Parseia JSON dos workers (structlog já emite JSON em prod).
   // Schema Alloy aceita: { level, event, source, consumer, job_id, timestamp, ... }
   // — emitido por oli-sdk (Python structlog desde v0.3, JS observability desde v0.10).
+  // worker_id/system_key: emitidos pelo oli-scraper (contextvars) p/ debug da frota.
   stage.json {
     expressions = {
-      level    = "level",
-      event    = "event",
-      source   = "source",
-      consumer = "consumer",
-      job_id   = "job_id",
+      level      = "level",
+      event      = "event",
+      source     = "source",
+      consumer   = "consumer",
+      job_id     = "job_id",
+      worker_id  = "worker_id",
+      system_key = "system_key",
     }
   }
 
-  // Promove "level" e "consumer" como labels para filtrar no Grafana / oli-ops.
+  // Promove "level", "consumer" e "system_key" como labels para filtrar no Grafana / oli-ops.
   // "consumer" tem cardinalidade baixa (~10 apps OLI: oli-app, oli-bi, oli-ops,
   // oli-news, oli-indexer, oli-agent, anp-bi-etl, oli-scraper, oli-word, ...).
+  // "system_key" (~62 tribunais, só em logs do oli-scraper) é label p/ dashboards da frota.
+  // "worker_id" fica como campo extraído (filtrável via `| json | worker_id="..."`) para
+  // evitar explosão de streams (consumer × level × system_key × worker_id).
   stage.labels {
     values = {
-      level    = "",
-      consumer = "",
+      level      = "",
+      consumer   = "",
+      system_key = "",
     }
   }
 }

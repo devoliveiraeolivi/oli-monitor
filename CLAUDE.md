@@ -114,6 +114,10 @@ para canal Telegram. Primeiro servico Python da stack.
 **Credenciais:** bot_token e chat_id em Vault `infra/telegram`, api_key em `infra/alerts`
 **URL:** https://alerts.oliveiraeolivi.cloud
 
+**Status atual (2026-05-18):** Bot NAO esta deployado em prod (paths `infra/telegram` + `infra/alerts.api_key` ausentes no Vault). Migracao Telegram->Slack designada (`docs/superpowers/specs/2026-03-18-slack-alerts-design.md`) e em WIP na worktree `slack-alerts`.
+
+**Pra alerting prod hoje, ver:** [`docs/ALERTING.md`](docs/ALERTING.md) — cobre Healthchecks.io + Slack webhook direto (caminho usado em producao por scripts de cron) + plano de migracao pro alerts bot quando deployado.
+
 ## Ecosystem
 
 Parte do ecossistema OLI: oli-scraper, oli-ml, oli-api, oli-llm, oli-index, oli-ops, oli-gateway.

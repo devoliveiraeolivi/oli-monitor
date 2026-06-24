@@ -2,6 +2,9 @@
 *.swp
 *.bak
 .worktrees/
+__pycache__/
+*.pyc
+.pytest_cache/
 
 # Renderizado por scripts/render_configs.py (contem segredos)
 prometheus/prometheus.yml

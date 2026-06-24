@@ -70,18 +70,24 @@ loki.process "pipeline" {
   }
 
   // Parseia JSON dos workers (structlog)
+  // worker_id/system_key: emitidos pelo oli-scraper (contextvars) p/ debug da frota.
   stage.json {
     expressions = {
-      level   = "level",
-      event   = "event",
-      source  = "source",
-      job_id  = "job_id",
+      level      = "level",
+      event      = "event",
+      source     = "source",
+      job_id     = "job_id",
+      worker_id  = "worker_id",
+      system_key = "system_key",
     }
   }
 
+  // "system_key" (~62 tribunais, só em logs do oli-scraper) vira label p/ dashboards da frota;
+  // "worker_id" fica como campo extraído (filtrável via `| json`) p/ evitar explosão de streams.
   stage.labels {
     values = {
-      level = "",
+      level      = "",
+      system_key = "",
     }
   }
 }

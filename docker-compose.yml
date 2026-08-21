@@ -31,6 +31,9 @@ services:
       - internal
       - network_swarm_public
     deploy:
+      # O bot depende de infra/telegram e infra/alerts no Vault. Permanece
+      # desligado por padrão até que esse canal seja configurado.
+      replicas: ${ALERTS_REPLICAS:-0}
       restart_policy:
         condition: any
       resources:

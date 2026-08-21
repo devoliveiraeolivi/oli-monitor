@@ -121,6 +121,10 @@ o cooldown.
 URL e service role somente no servidor em `supabase/ops`
 **URL:** https://alerts.oliveiraeolivi.cloud
 
+O bot fica desativado por padrão (`ALERTS_REPLICAS=0`). Defina `ALERTS_REPLICAS=1`
+somente depois de criar `infra/telegram` e `infra/alerts` no Vault; o vigia de patches
+compartilha atualmente esse canal de entrega.
+
 Em produção, defina `ALERTS_VERSION=<commit-curto>` no Portainer. O compose e o script de deploy
 respeitam essa versão para que um restart não troque a imagem silenciosamente.
 

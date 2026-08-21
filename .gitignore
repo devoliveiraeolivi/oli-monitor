@@ -1,6 +1,8 @@
 .env
 *.swp
 *.bak
+__pycache__/
+*.py[cod]
 .worktrees/
 
 # Renderizado por scripts/render_configs.py (contem segredos)

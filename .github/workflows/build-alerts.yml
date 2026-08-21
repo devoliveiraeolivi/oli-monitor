@@ -19,6 +19,22 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: pip install -r alerts/requirements.txt
+
+      - name: Unit tests
+        run: PYTHONPATH=alerts python -m unittest discover -s alerts/tests -v
+
   lint:
     name: Lint & Format
     runs-on: ubuntu-latest
@@ -67,7 +83,7 @@ jobs:
 
   docker:
     name: Build & Push Docker
-    needs: [lint, security]
+    needs: [test, lint, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

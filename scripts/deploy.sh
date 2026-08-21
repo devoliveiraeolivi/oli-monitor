@@ -18,8 +18,8 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$ROOT_DIR"
 
 # ── Pull imagens custom (GHCR) ─────────────────────────────
-echo "Pulling oli-alerts:latest ..."
-docker pull ghcr.io/devoliveiraeolivi/oli-alerts:latest
+echo "Pulling configured oli-alerts image ..."
+docker compose -f "$COMPOSE_FILE" pull alerts
 
 # ── Deploy stack ────────────────────────────────────────────
 echo "Deploying stack $STACK_NAME ..."

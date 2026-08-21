@@ -121,7 +121,7 @@ o cooldown.
 URL e service role somente no servidor em `supabase/ops`
 **URL:** https://alerts.oliveiraeolivi.cloud
 
-Em produção, defina `ALERTS_VERSION=sha-<commit>` no Portainer. O compose e o script de deploy
+Em produção, defina `ALERTS_VERSION=<commit-curto>` no Portainer. O compose e o script de deploy
 respeitam essa versão para que um restart não troque a imagem silenciosamente.
 
 ## Ecosystem

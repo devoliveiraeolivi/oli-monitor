@@ -1,7 +1,5 @@
 """Cliente Telegram Bot API. Fire-and-forget via httpx."""
 
-from typing import Optional
-
 import httpx
 import structlog
 
@@ -11,8 +9,8 @@ logger = structlog.get_logger(__name__)
 
 EMOJI_MAP = {
     AlertLevel.critical: "\U0001f534",  # 🔴
-    AlertLevel.warning: "\U0001f7e1",   # 🟡
-    AlertLevel.info: "\U0001f7e2",      # 🟢
+    AlertLevel.warning: "\U0001f7e1",  # 🟡
+    AlertLevel.info: "\U0001f7e2",  # 🟢
 }
 
 LEVEL_LABEL = {
@@ -35,7 +33,7 @@ class TelegramClient:
         self._http = httpx.AsyncClient(timeout=10)
 
     def _formatar(
-        self, app: str, level: AlertLevel, title: str, detail: Optional[str] = None
+        self, app: str, level: AlertLevel, title: str, detail: str | None = None
     ) -> str:
         emoji = EMOJI_MAP.get(level, "\u2139\ufe0f")
         label = LEVEL_LABEL.get(level, level.value.upper())
@@ -45,7 +43,7 @@ class TelegramClient:
         return texto
 
     async def enviar(
-        self, app: str, level: AlertLevel, title: str, detail: Optional[str] = None
+        self, app: str, level: AlertLevel, title: str, detail: str | None = None
     ) -> int:
         """Envia mensagem para o chat. Retorna message_id ou levanta TelegramError."""
         texto = self._formatar(app, level, title, detail)

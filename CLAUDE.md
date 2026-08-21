@@ -110,9 +110,19 @@ para canal Telegram. Primeiro servico Python da stack.
 - `POST /notify` — envia notificacao (requer X-API-Key)
 - `GET /health` — health check (sem auth)
 
-**Env vars:** VAULT_ADDR, VAULT_ROLE_ID, VAULT_SECRET_ID, LOG_FORMAT
-**Credenciais:** bot_token e chat_id em Vault `infra/telegram`, api_key em `infra/alerts`
+O próprio serviço também vigia `indexing_review_patch_runs` no Supabase OPS e alerta quando
+um patch fica mais de 60 segundos em `queued`, perde o lease em `running` ou termina em
+`failed_partial`. A consulta é somente leitura, usa o AppRole `oli-monitor`/policy
+`worker-monitor`, ignora tentativas falhas já superadas e deduplica alertas em memória durante
+o cooldown.
+
+**Env vars:** VAULT_ADDR, VAULT_ROLE_ID, VAULT_SECRET_ID, LOG_FORMAT e `PATCH_WATCH_*`
+**Credenciais:** bot_token e chat_id em Vault `infra/telegram`, api_key em `infra/alerts`,
+URL e service role somente no servidor em `supabase/ops`
 **URL:** https://alerts.oliveiraeolivi.cloud
+
+Em produção, defina `ALERTS_VERSION=sha-<commit>` no Portainer. O compose e o script de deploy
+respeitam essa versão para que um restart não troque a imagem silenciosamente.
 
 ## Ecosystem
 

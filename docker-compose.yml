@@ -203,12 +203,17 @@ services:
   # POST /notify com X-API-Key → formata e envia para canal Telegram
   # ═══════════════════════════════════════════════════════════════
   alerts:
-    image: ghcr.io/devoliveiraeolivi/oli-alerts:latest
+    image: ghcr.io/devoliveiraeolivi/oli-alerts:${ALERTS_VERSION:-latest}
     environment:
       - VAULT_ADDR=${VAULT_ADDR:-https://auth.oliveiraeolivi.cloud}
       - VAULT_ROLE_ID=${VAULT_ROLE_ID}
       - VAULT_SECRET_ID=${VAULT_SECRET_ID}
       - LOG_FORMAT=json
+      - PATCH_WATCH_ENABLED=${PATCH_WATCH_ENABLED:-true}
+      - PATCH_WATCH_POLL_SECONDS=${PATCH_WATCH_POLL_SECONDS:-30}
+      - PATCH_WATCH_QUEUED_SECONDS=${PATCH_WATCH_QUEUED_SECONDS:-60}
+      - PATCH_WATCH_FAILED_LOOKBACK_SECONDS=${PATCH_WATCH_FAILED_LOOKBACK_SECONDS:-86400}
+      - PATCH_WATCH_ALERT_COOLDOWN_SECONDS=${PATCH_WATCH_ALERT_COOLDOWN_SECONDS:-21600}
     networks:
       - internal
       - network_swarm_public
